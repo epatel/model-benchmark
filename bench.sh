@@ -64,8 +64,30 @@ case "$cmd" in
     set -e
     [[ -f results.json ]] && cp -f results.json "reports/$m.results.json"
 
+    # Edit-count capture: the model's pure edits vs base (excludes hidden tests,
+    # which live only on the grading commit, not on model/$m).
+    {
+      echo
+      echo "== edit stat (model/$m vs base) =="
+      git diff --stat "$BASE" "model/$m" -- projects
+    } | tee -a "reports/$m.txt"
+    git diff --numstat "$BASE" "model/$m" -- projects \
+      | awk -F'\t' '
+        { add=($1=="-"?0:$1); rem=($2=="-"?0:$2);
+          split($3,p,"/"); proj=(p[1]=="projects"?p[2]:"_other");
+          a[proj]+=add; r[proj]+=rem; f[proj]++; ta+=add; tr+=rem; tf++; }
+        END {
+          printf "{\n  \"total\": {\"files\": %d, \"insertions\": %d, \"deletions\": %d},\n", tf, ta, tr;
+          printf "  \"by_project\": {";
+          first=1;
+          for (k in a) { printf "%s\n    \"%s\": {\"files\": %d, \"insertions\": %d, \"deletions\": %d}",
+            (first?"":","), k, f[k], a[k], r[k]; first=0; }
+          printf "\n  }\n}\n";
+        }' > "reports/$m.metrics.json"
+
     git checkout -q "$BASE"
-    echo "Graded model/$m -> reports/$m.txt (overall exit $rc)"
+    edits="$(sed -n 's/.*"files": \([0-9]*\), "insertions": \([0-9]*\), "deletions": \([0-9]*\).*/\1 files, +\2 -\3/p' "reports/$m.metrics.json" | head -1)"
+    echo "Graded model/$m -> reports/$m.txt (overall exit $rc; edits: ${edits:-n/a})"
     ;;
 
   list)
