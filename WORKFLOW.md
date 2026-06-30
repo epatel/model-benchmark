@@ -34,8 +34,22 @@ gitGraph
 ./bench.sh grade opus        # model work + hidden tests, runs all -> reports/opus.txt
 ```
 
-`grade` produces `reports/opus.txt` (human log) and `reports/opus.results.json`
-(per-project pass/fail + seconds). Repeat for each model, then compare reports.
+`grade` produces three artifacts per model:
+
+- `reports/opus.txt` — human log (test results + a `git diff --stat`).
+- `reports/opus.results.json` — per-project pass/fail + seconds.
+- `reports/opus.metrics.json` — edit counts (files / insertions / deletions),
+  total and per-project, of the model's pure edits vs `base`. Surgical fixes
+  score low here; a passing 1-line fix beats a passing 200-line rewrite.
+
+```json
+{
+  "total": {"files": 1, "insertions": 1, "deletions": 1},
+  "by_project": { "01-lru-cache": {"files": 1, "insertions": 1, "deletions": 1} }
+}
+```
+
+Repeat for each model, then compare reports.
 
 ```bash
 ./bench.sh list              # show model/ and grade/ branches
