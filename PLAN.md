@@ -19,6 +19,10 @@ Living plan for the AI-model coding benchmark. Check items off as they land.
       model, then grades. `scripts/summarize.py` prints results grid + efficiency table.
 - [x] **Time + token capture** — `--output-format json` → `scripts/usage.py` aggregates
       duration / turns / cost / tokens into `<model>.usage.json`.
+- [x] **Ollama runner (local + `:cloud`)** — `run_ollama.sh` + `scripts/ollama_solve.py`
+      adapt non-agentic models (feed task + source, write back their edits), then grade
+      + report identically. Usage log mapped to the same schema (tokens from
+      `prompt_eval_count`/`eval_count`).
 - [x] **Validated** — haiku/sonnet/opus all 5/5 on tier-1 (harness proven end-to-end).
 
 ## Done (tier-2)
