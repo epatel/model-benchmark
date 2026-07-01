@@ -67,6 +67,7 @@ w = out.append
 w("<!doctype html><html lang=en><head><meta charset=utf-8>")
 w(f"<title>Evaluation {E(DATE)}</title>")
 w("<style>")
+w(HtmlDiff._styles)  # difflib defaults FIRST, so our rules below win
 w("""
 :root{color-scheme:light dark}
 body{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:24px;max-width:1200px;margin:auto}
@@ -84,17 +85,20 @@ details>summary{cursor:pointer;padding:6px 10px;background:#8881;border-radius:6
 details[open]>summary{border-bottom:1px solid #8883;border-radius:6px 6px 0 0}
 .fail-summary{color:#c62828}
 pre.fail{background:#e5393511;padding:10px;overflow:auto;border-radius:0 0 6px 6px;margin:0}
-.diffwrap{overflow:auto;padding:6px}
-table.diff{font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;border-collapse:collapse;width:100%}
-table.diff td{padding:0 6px;vertical-align:top;white-space:pre}
-.diff_header{background:#8882;color:#888;text-align:right;user-select:none}
-td.diff_header{padding-right:8px}
-.diff_next{background:#8881}
-.diff_add{background:#3faf4633}
-.diff_chg{background:#f9a82533}
-.diff_sub{background:#e5393533}
+
+/* Diffs: force a light, high-contrast (GitHub-like) surface with DARK text,
+   independent of the page's dark mode, so highlighted cells stay legible. */
+.diffwrap{overflow:auto;padding:0;background:#fff;border-radius:0 0 6px 6px}
+.diffwrap>div{color:#57606a;padding:8px 8px 2px}
+table.diff{background:#fff;color:#1f2328;border-collapse:collapse;width:100%;
+           font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px}
+table.diff td{padding:0 6px;vertical-align:top;white-space:pre;color:#1f2328}
+table.diff .diff_header{background:#f6f8fa;color:#8c959f;text-align:right;user-select:none;padding-right:8px}
+table.diff .diff_next{background:#f6f8fa;color:#8c959f}
+table.diff .diff_add{background:#d1f8d9;color:#1f2328}
+table.diff .diff_chg{background:#fff3c9;color:#1f2328}
+table.diff .diff_sub{background:#ffd0cd;color:#1f2328}
 """)
-w(HtmlDiff._styles)  # difflib's own legend/table styles
 w("</style></head><body>")
 
 w(f"<h1>Combined evaluation — {E(DATE)}</h1>")
