@@ -113,7 +113,15 @@ output plus every model's per-task diff, consolidated from the `model/*`
 branches into one doc:
 
 ```bash
-./scripts/evaluate.sh                 # evaluations/<today>.md on branch `results`
+./scripts/evaluate.sh                 # evaluations/<today>.md  (markdown)
+./scripts/evaluate_html.sh            # evaluations/<today>.html (real tables + side-by-side diffs)
+```
+
+The HTML variant renders the leaderboard/grid as tables and every diff
+side-by-side (via `difflib`), each collapsible. View it with:
+
+```bash
+git show results:evaluations/2026-07-01.html > /tmp/eval.html && open /tmp/eval.html
 ```
 
 Both scripts use git plumbing — the working tree and current branch are never
