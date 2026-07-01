@@ -23,6 +23,9 @@ Living plan for the AI-model coding benchmark. Check items off as they land.
       adapt non-agentic models (feed task + source, write back their edits), then grade
       + report identically. Usage log mapped to the same schema (tokens from
       `prompt_eval_count`/`eval_count`).
+- [x] **Results consolidation** — `scripts/snapshot.sh` writes `runs/<date>.md`
+      (leaderboard + per-model pass/fail) to a dedicated `results` branch via git
+      plumbing (working tree untouched). Answer-free, so safe to push.
 - [x] **Validated** — haiku/sonnet/opus all 5/5 on tier-1 (harness proven end-to-end).
 
 ## Done (tier-2)

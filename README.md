@@ -74,6 +74,27 @@ Notes when comparing across runners: Ollama models return whole files, so their
 **edit-count** looks larger than Claude's surgical diffs; and cloud **cost**
 shows `$0` (Ollama does not report pricing).
 
+## Consolidating results into a branch
+
+Snapshot the current `reports/` into a dated markdown file on a dedicated
+`results` branch (leaderboard + per-model pass/fail), so run history is versioned
+separately from the code:
+
+```bash
+./scripts/snapshot.sh                 # runs/<today>.md on branch `results`
+./scripts/snapshot.sh 2026-07-01      # explicit date/label
+```
+
+It uses git plumbing — the working tree and current branch are never touched.
+Browse snapshots without checking the branch out:
+
+```bash
+git ls-tree -r --name-only results        # list all runs/*.md
+git show results:runs/2026-07-01.md       # view one
+```
+
+The `results` branch contains no answers, so it is safe to `git push origin results`.
+
 ## How to run a single model by hand
 
 1. Start from a **clean checkout** of a project (no prior model's edits).
