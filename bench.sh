@@ -26,6 +26,9 @@ CANON=(
   projects/03-csv-parser/run_tests.sh  projects/03-csv-parser/test_parser.py
   projects/04-rest-pagination/run_tests.sh projects/04-rest-pagination/api.test.js
   projects/05-god-refactor/run_tests.sh projects/05-god-refactor/test_pricing.py
+  projects/06-deadlock/run_tests.sh    projects/06-deadlock/bank_test.go
+  projects/07-perf-dedup/run_tests.sh  projects/07-perf-dedup/test_dedupe.py
+  projects/08-event-bus/run_tests.sh   projects/08-event-bus/test_bus.py
 )
 
 cmd="${1:-help}"; shift || true

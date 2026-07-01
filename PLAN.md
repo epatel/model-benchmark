@@ -21,22 +21,19 @@ Living plan for the AI-model coding benchmark. Check items off as they land.
       duration / turns / cost / tokens into `<model>.usage.json`.
 - [x] **Validated** — haiku/sonnet/opus all 5/5 on tier-1 (harness proven end-to-end).
 
-## Next
+## Done (tier-2)
 
-- [ ] **Add a harder second tier (tier-2) that actually discriminates between frontier
-      models.** Tier-1 is too easy (everyone scores 5/5), so add `projects/` tasks whose
-      oracles catch subtle failure modes the way `-race` catches tier-1's race:
-    - Subtler concurrency: a lock-ordering **deadlock** or an ABA / lost-wakeup bug
-      (oracle: bounded-time stress harness that hangs/deadlocks on the wrong fix).
-    - Multi-file feature: a change spanning 3–4 files with a cross-cutting invariant
-      (oracle: integration tests + a property/invariant check).
-    - Invariant-heavy refactor: preserve behavior on a module with tricky edge cases
-      (oracle: large golden/property suite; mutation-style hidden tests).
-    - Performance bug: correct-but-O(n²) code that must stay correct AND meet a time
-      budget (oracle: perf assertion on a large input).
-    - Keep the same shape: `TASK.md` + seeded defect + visible tests on `base`; hidden
-      tests + `SOLUTION.md` added to the `grading` commit. Number them `06-…`, `07-…`.
-      Confirm each oracle both ways (seeded → fail, reference fix → pass) before locking.
+- [x] **Harder second tier that discriminates between frontier models** — three tasks
+      whose oracles catch subtle failure modes, each verified both ways
+      (seeded → fail, reference fix → pass):
+    - `06-deadlock` (Go) — lock-ordering deadlock; oracle is a 5s-watchdog stress test
+      that fails (not hangs) on the wrong fix. Fix = consistent lock ordering.
+    - `07-perf-dedup` (Py) — correct-but-O(n²); visible correctness tests pass on the
+      slow code, hidden test asserts an 80k-item time budget. Fix = set/`dict.fromkeys`.
+    - `08-event-bus` (Py, 2 files) — multi-file feature (unsubscribe + once) with
+      snapshot-during-iteration and raise-safety invariants in the hidden tests.
+
+## Next
 
 ## Backlog / ideas
 
