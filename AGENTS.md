@@ -140,8 +140,13 @@ git config core.hooksPath .githooks
 
 - If `main` advances after `grading` exists, re-run `git rebase main grading`
   so `grading` stays one additive commit on top (verify with the checks above).
-- Don't run two model runners at once — they share the repo and check out
-  branches. Runs are sequential (`run_all.sh` handles this).
+- Don't run two model runners at once **in the same worktree** — they check
+  out branches. `run_all.sh` is sequential. To parallelize, give the second
+  runner its own worktree (`git worktree add ../mb-ollama --detach main`,
+  `mkdir ../mb-ollama/reports`), run disjoint model sets, then copy the
+  worktree's `reports/<model>.*` back before summarizing. `bench.sh` is
+  worktree-safe (explicit start points; detached fallback when `$BASE` is
+  checked out elsewhere).
 - The clean-task branch is auto-detected by `bench.sh` (prefers `main`, falls
   back to `base`; override `BENCH_BASE`). Use `$BASE`, never a hardcoded name.
 - Never push the plaintext `grading` branch to a remote — it's the answer key.
