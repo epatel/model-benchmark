@@ -5,10 +5,12 @@ repo README for context). You are given the combined evaluation for the run
 (leaderboard + reproduced failures + every model's per-task solution diff) and
 the raw per-model usage JSON. Produce a rigorous, skeptical review.
 
-There are 8 tasks — tier-1 (`01`–`05`: LRU off-by-one, race, csv parser,
-pagination, refactor) and tier-2 (`06` deadlock, `07` O(n²) perf, `08`
-multi-file event-bus). Each model solved on a clean branch and was graded by
-hidden-test oracles it never saw.
+The task count for this run is given in the RUN DATA below (`n_tasks`) —
+tier-1 (`01`–`05`: LRU off-by-one, race, csv parser, pagination, refactor),
+tier-2 (`06` deadlock, `07` O(n²) perf, `08` multi-file event-bus), tier-3
+(`09` exponential→polynomial glob matcher, exact semantics preserved). Each
+model solved on a clean branch and was graded by hidden-test oracles it
+never saw.
 
 ## Providers report differently — NORMALIZE before comparing
 
