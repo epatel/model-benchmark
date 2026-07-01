@@ -10,8 +10,8 @@ claude  sonnet
 claude  opus
 
 ollama  glm-5.2:cloud
-ollama  gemma4:31b-cloud
-ollama  nemotron-3-super:cloud
+ollama  gemma4:cloud
+ollama  nemotron-3-ultra:cloud
 ollama  kimi-k2.7-code:cloud
 
 # add more, e.g.:
