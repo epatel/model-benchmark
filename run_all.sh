@@ -42,5 +42,10 @@ echo "============================================================"
 echo "COMBINED LEADERBOARD"
 echo "============================================================"
 python3 scripts/summarize.py
-echo
-echo "Tip: snapshot this run with  ./scripts/snapshot.sh"
+
+# Consolidate this run into a dated file on the `results` branch.
+# Skip with SNAPSHOT=0 ./run_all.sh
+if [ "${SNAPSHOT:-1}" != "0" ]; then
+  echo
+  ./scripts/snapshot.sh
+fi
