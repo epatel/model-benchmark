@@ -79,7 +79,7 @@ case "$cmd" in
     # which live only on the grading commit, not on model/$m).
     {
       echo
-      echo "== edit stat (model/$m vs base) =="
+      echo "== edit stat (model/$m vs $BASE) =="
       git diff --stat "$BASE" "model/$m" -- projects
     } | tee -a "reports/$m.txt"
     git diff --numstat "$BASE" "model/$m" -- projects \

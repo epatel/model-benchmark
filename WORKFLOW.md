@@ -3,6 +3,11 @@
 Answers live on a separate branch so the model never sees them, and grading is a
 conflict-free cherry-pick because hidden tests are **new files**.
 
+> **Branch name:** the clean-task branch is now **`main`** (originally `base`;
+> it was renamed). `bench.sh` auto-detects it (prefers `main`, falls back to
+> `base`, override with `BENCH_BASE=<branch>`). Wherever this doc says `base`,
+> read it as "the clean-task branch" = `main`.
+
 ## Branches
 
 | Branch | Contents |
