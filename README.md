@@ -9,6 +9,15 @@ tests) live on a separate `grading` branch, so a model working on the clean
 **Live results:** https://epatel.github.io/model-benchmark/ — every run's
 leaderboard and side-by-side solution diffs (served from the `results` branch).
 
+## Setup
+
+After cloning, enable the guard hook (blocks accidentally committing answer-key
+files onto `main`):
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Requirements
 
 - **python3** — projects 01/03/05/07/08 and all scoring scripts

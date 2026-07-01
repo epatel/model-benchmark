@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Refuse to commit answer-key files (SOLUTION.md / *hidden*) onto the clean-task
+# branch. Answers belong ONLY on the `grading` branch (or the encrypted
+# grading.enc bundle). Install once per clone:
+#
+#   git config core.hooksPath .githooks
+#
+set -uo pipefail
+
+branch="$(git symbolic-ref --short HEAD 2>/dev/null || true)"
+case "$branch" in
+  main|base)
+    leaks="$(git diff --cached --name-only | grep -E '(^|/)SOLUTION\.md$|hidden' || true)"
+    if [ -n "$leaks" ]; then
+      echo "pre-commit: refusing to commit answer files onto '$branch' —" >&2
+      echo "they belong on the grading branch, not the clean-task branch:" >&2
+      echo "$leaks" | sed 's/^/    /' >&2
+      echo "fix: git restore --staged <file>   (or switch to the grading branch)" >&2
+      exit 1
+    fi
+    ;;
+esac
+exit 0

@@ -127,6 +127,15 @@ chmod +x projects/NN-name/run_tests.sh
 
 6. **Docs:** update the projects table in `README.md` and tick `PLAN.md`.
 
+## Setup (per clone)
+
+Enable the guard hook that blocks answer files from being committed onto the
+clean-task branch:
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Gotchas
 
 - If `main` advances after `grading` exists, re-run `git rebase main grading`
