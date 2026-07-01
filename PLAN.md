@@ -26,6 +26,11 @@ Living plan for the AI-model coding benchmark. Check items off as they land.
 - [x] **Results consolidation** — `scripts/snapshot.sh` writes `runs/<date>.md`
       (leaderboard + per-model pass/fail) to a dedicated `results` branch via git
       plumbing (working tree untouched). Answer-free, so safe to push.
+- [x] **Combined evaluation + HTML + Pages** — `scripts/evaluate.sh` (markdown) and
+      `scripts/evaluate_html.sh` (real tables + side-by-side diffs) consolidate all
+      `model/*` branches into `evaluations/<date>.*`. `scripts/build_index.sh` builds
+      the runs landing page; served via GitHub Pages from the `results` branch at
+      https://epatel.github.io/model-benchmark/ (repo homepage).
 - [x] **Validated** — haiku/sonnet/opus all 5/5 on tier-1 (harness proven end-to-end).
 
 ## Done (tier-2)

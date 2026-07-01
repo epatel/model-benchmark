@@ -6,6 +6,9 @@ scoring is objective rather than eyeballed. Answers (`SOLUTION.md` + hidden
 tests) live on a separate `grading` branch, so a model working on the clean
 `main` branch can't see them.
 
+**Live results:** https://epatel.github.io/model-benchmark/ — every run's
+leaderboard and side-by-side solution diffs (served from the `results` branch).
+
 ## Requirements
 
 - **python3** — projects 01/03/05/07/08 and all scoring scripts
