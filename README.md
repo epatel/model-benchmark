@@ -170,6 +170,32 @@ edits made, files touched, whether unrelated tests broke, time/tokens.
 For the refactor (05), gate on tests then judge structure separately
 (complexity/duplication reduction), optionally with an LLM-as-judge rubric.
 
+## Grading answer key (encrypted)
+
+The answer key — `SOLUTION.md` + the hidden tests — lives on the local `grading`
+branch and is **not** pushed as plaintext (that would let crawlers/model-training
+absorb the answers and rot the benchmark). Instead it's shipped as an encrypted
+bundle, `grading.enc` (AES-256), which is safe to commit publicly.
+
+To run the benchmark from a fresh clone (you need the password, shared
+out-of-band):
+
+```bash
+./scripts/unpack_grading.sh          # decrypts grading.enc -> rebuilds the `grading` branch
+./run_all.sh                         # now you can grade
+```
+
+Maintainer, after changing/adding hidden tests or solutions:
+
+```bash
+./scripts/pack_grading.sh            # re-encrypt grading -> grading.enc
+git add grading.enc && git commit -m "update encrypted grading bundle" && git push
+```
+
+Integrity note: during a task a model only ever sees the clean `main` branch;
+grading is applied afterward. Keep the password out of the repo, and don't show
+decrypted hidden tests to a model under test.
+
 ## See also
 
 - **`WORKFLOW.md`** — the git branch model (`main` / `grading` / `model/*` /

@@ -135,4 +135,7 @@ chmod +x projects/NN-name/run_tests.sh
   branches. Runs are sequential (`run_all.sh` handles this).
 - The clean-task branch is auto-detected by `bench.sh` (prefers `main`, falls
   back to `base`; override `BENCH_BASE`). Use `$BASE`, never a hardcoded name.
-- Never push `grading` to a remote — it's the answer key.
+- Never push the plaintext `grading` branch to a remote — it's the answer key.
+  To distribute it, re-encrypt with `scripts/pack_grading.sh` and commit
+  `grading.enc`; collaborators rebuild `grading` with `scripts/unpack_grading.sh`
+  (password shared out-of-band). Re-run `pack_grading.sh` after adding a project.
