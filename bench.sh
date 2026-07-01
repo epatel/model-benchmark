@@ -14,7 +14,15 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-BASE=base
+# The clean-task branch. Auto-detect so the harness follows a base→main rename;
+# override with BENCH_BASE=<branch> if needed.
+if [ -n "${BENCH_BASE:-}" ]; then
+  BASE="$BENCH_BASE"
+elif git rev-parse --verify -q main >/dev/null; then
+  BASE=main
+else
+  BASE=base
+fi
 GRADING=grading
 
 # Restored from base before grading so a model can't tamper with the harness or
