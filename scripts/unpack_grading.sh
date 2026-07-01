@@ -17,7 +17,9 @@ BRANCH="${GRADING_BRANCH:-grading}"
 
 [ -f grading.enc ] || { echo "grading.enc not found"; exit 1; }
 
+# Password: $GRADING_PASS, else the committed grading.pass file, else prompt.
 if [ -n "${GRADING_PASS:-}" ]; then PACKPW="$GRADING_PASS"
+elif [ -f grading.pass ]; then PACKPW="$(tr -d '\n' < grading.pass)"
 else read -rsp "grading password: " PACKPW; echo >&2; fi
 export PACKPW
 

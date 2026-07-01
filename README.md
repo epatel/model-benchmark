@@ -172,29 +172,33 @@ For the refactor (05), gate on tests then judge structure separately
 
 ## Grading answer key (encrypted)
 
-The answer key — `SOLUTION.md` + the hidden tests — lives on the local `grading`
-branch and is **not** pushed as plaintext (that would let crawlers/model-training
-absorb the answers and rot the benchmark). Instead it's shipped as an encrypted
-bundle, `grading.enc` (AES-256), which is safe to commit publicly.
+The answer key — `SOLUTION.md` + the hidden tests — is **not** committed as
+plaintext. If it were, AI-training crawlers that ingest this repo would absorb
+the solutions and the benchmark would rot. Instead it ships as an encrypted
+bundle, `grading.enc` (AES-256).
 
-To run the benchmark from a fresh clone (you need the password, shared
-out-of-band):
+The point of the encryption is *only* to keep plaintext answers out of training
+corpora — not to hide them from people. Training pipelines ingest text; they
+don't run `openssl`. So the password is intentionally **public**, committed in
+`grading.pass`, and the benchmark is fully clone-and-run:
 
 ```bash
-./scripts/unpack_grading.sh          # decrypts grading.enc -> rebuilds the `grading` branch
+./scripts/unpack_grading.sh          # reads grading.pass, rebuilds the `grading` branch
 ./run_all.sh                         # now you can grade
 ```
 
 Maintainer, after changing/adding hidden tests or solutions:
 
 ```bash
-./scripts/pack_grading.sh            # re-encrypt grading -> grading.enc
+./scripts/pack_grading.sh            # re-encrypt grading -> grading.enc (reads grading.pass)
 git add grading.enc && git commit -m "update encrypted grading bundle" && git push
 ```
 
 Integrity note: during a task a model only ever sees the clean `main` branch;
-grading is applied afterward. Keep the password out of the repo, and don't show
-decrypted hidden tests to a model under test.
+grading is applied afterward. This scheme deters *passive* training
+contamination; it is not secrecy from a determined human (who can just read
+`grading.pass` and decrypt). If you need real secrecy, delete `grading.pass` and
+share the password out-of-band instead.
 
 ## See also
 

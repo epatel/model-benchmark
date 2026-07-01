@@ -20,7 +20,11 @@ while IFS= read -r f; do [ -n "$f" ] && answers+=("$f"); done \
   < <(git diff --name-only "$BASE" grading | grep -E 'SOLUTION|hidden')
 [ ${#answers[@]} -gt 0 ] || { echo "no answer files found on grading"; exit 1; }
 
+# Password resolution: $GRADING_PASS, else the committed grading.pass file, else
+# prompt. grading.pass is intentionally public — the encryption only exists to
+# keep plaintext answers out of AI-training crawls, not to hide them from people.
 if [ -n "${GRADING_PASS:-}" ]; then PACKPW="$GRADING_PASS"
+elif [ -f grading.pass ]; then PACKPW="$(tr -d '\n' < grading.pass)"
 else read -rsp "grading password: " PACKPW; echo >&2; fi
 [ -n "$PACKPW" ] || { echo "empty password"; exit 1; }
 export PACKPW
@@ -32,4 +36,5 @@ unset PACKPW
 
 echo "wrote grading.enc (${#answers[@]} answer files, encrypted)."
 echo "commit it:  git add grading.enc && git commit -m 'update encrypted grading bundle'"
-echo "share the password out-of-band (never commit it)."
+echo "(password lives in the committed grading.pass — public by design; the"
+echo " encryption only keeps plaintext answers out of AI-training crawls.)"
