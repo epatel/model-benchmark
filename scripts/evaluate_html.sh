@@ -36,3 +36,6 @@ unset GIT_INDEX_FILE; rm -f "$idx" "$TMP"
 
 echo "html evaluation: $REL -> branch '$BRANCH' ($(git rev-parse --short "$commit"))"
 echo "open:  git show $BRANCH:$REL > /tmp/eval.html && open /tmp/eval.html"
+
+# refresh the runs landing page (index.html) on the same branch
+./scripts/build_index.sh
