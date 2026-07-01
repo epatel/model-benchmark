@@ -30,10 +30,16 @@ for model in "${MODELS[@]}"; do
     proj="${proj%/}"
     name="$(basename "$proj")"
     echo "  -> $model solving $name ..."
-    ( cd "$proj" && claude --model "$model" -p "$PROMPT" --dangerously-skip-permissions ) \
-      >"reports/$model.logs/$name.log" 2>&1 \
-      || echo "     (claude exited non-zero on $name; see reports/$model.logs/$name.log)"
+    # --output-format json emits a result object with duration_ms, num_turns,
+    # total_cost_usd and a usage{} block (time + token capture). command bypasses
+    # any interactive `claude` shell function so stdout stays pure JSON.
+    ( cd "$proj" && command claude --model "$model" -p "$PROMPT" \
+        --dangerously-skip-permissions --output-format json ) \
+      >"reports/$model.logs/$name.json" 2>>"reports/$model.logs/stderr.log" \
+      || echo "     (claude exited non-zero on $name; see reports/$model.logs/$name.json)"
   done
+
+  python3 scripts/usage.py "$model"
 
   echo "  -> grading $model"
   ./bench.sh grade "$model"
