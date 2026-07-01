@@ -41,6 +41,9 @@ HTML
     for d in $dates; do
       echo "<li><span class=date>$d</span><span class=links>"
       echo "<a href=\"evaluations/$d.html\">combined evaluation &rarr;</a>"
+      if echo "$files" | grep -q "^evaluations/$d-review\.md$"; then
+        echo "<a href=\"$REPO_URL/blob/$BRANCH/evaluations/$d-review.md\">review</a>"
+      fi
       echo "<a href=\"$REPO_URL/blob/$BRANCH/runs/$d.md\">snapshot</a>"
       echo "</span></li>"
     done
