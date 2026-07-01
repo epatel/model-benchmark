@@ -1,0 +1,19 @@
+# Canonical list of models to benchmark. Used by ./run_all.sh
+#
+# Format:  <runner> <model>
+#   runner = claude  -> solved agentically via `claude -p` (run_models.sh)
+#   runner = ollama  -> solved via adapter, local or :cloud (run_ollama.sh)
+# Blank lines and lines starting with # are ignored.
+
+claude  haiku
+claude  sonnet
+claude  opus
+
+ollama  glm-5.2:cloud
+ollama  gemma4:31b-cloud
+ollama  nemotron-3-super:cloud
+ollama  kimi-k2.7-code:cloud
+
+# add more, e.g.:
+# ollama  kimi-k2.5:cloud
+# ollama  llama3.1            (a local model)

@@ -30,6 +30,20 @@ chases visible-green gets caught.
 
 ## Running models automatically (recommended)
 
+The canonical model list lives in **`models.txt`** — one `<runner> <model>` per
+line (`claude` or `ollama`). Run **every** listed model and print the combined
+leaderboard with one command:
+
+```bash
+./run_all.sh                 # runs everything in models.txt
+./run_all.sh my-models.txt   # a different list
+DRY=1 ./run_all.sh           # print the plan, run nothing
+```
+
+`run_all.sh` calls the two runners below in sequence (they share the git repo
+and must not overlap). To run a subset directly, call a runner with explicit
+model args instead.
+
 Two umbrella runners drive every task for every model, then grade + tabulate.
 Both share the git harness (see `WORKFLOW.md`) and write to `reports/`.
 
