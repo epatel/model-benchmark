@@ -56,6 +56,19 @@ auto-discover `projects/*`, so you do NOT edit them for a new project.
 
 ## Procedure to add project `NN-name`
 
+**Shortcut:** `scripts/new_project.sh` automates this. Scaffold a valid skeleton,
+edit it into your real task, then let it do the branch dance + CANON update:
+
+```bash
+scripts/new_project.sh scaffold NN-name python|go|node   # creates projects/NN-name/
+# ... edit source, TASK.md, visible + hidden tests, SOLUTION.md into the real task ...
+scripts/new_project.sh commit NN-name                    # branch dance + CANON, prints checks
+# then verify both ways (the command prints the exact steps) and update README.md
+```
+
+The manual steps below are what that script does — follow them if you need to
+do it by hand or something goes wrong.
+
 Work on `main`. Create the whole project on disk first (including hidden +
 SOLUTION), then split answers onto `grading`.
 
