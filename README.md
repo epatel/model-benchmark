@@ -55,6 +55,18 @@ Tier-2 designs the *hidden* tests to carry the difficulty: 07's visible tests
 pass on the slow code, and 08 hides its hard invariants — so a model that only
 chases visible-green gets caught.
 
+**Tier 3** (hardest — algorithmic rewrite under exact-semantics constraints):
+
+| # | Project | Lang | Task type | Oracle |
+|---|---------|------|-----------|--------|
+| 09 | `glob-matcher` | Python | Exponential → polynomial rewrite, behavior identical | `unittest` (hidden 10s-watchdog perf + semantics probes + no-`re`/`fnmatch` guard) |
+
+Tier-3 raises the bar: ALL visible tests pass on the seeded code (it is
+*correct*, just exponentially slow), so a model must recognize the complexity
+bug itself. The hidden tests then punish both inaction (adversarial perf cases
+under a watchdog) and careless rewrites (class-bracket edge cases like `[]]`,
+`[!]]`, unterminated `[`; no delegating to a regex engine).
+
 ## Running models automatically (recommended)
 
 The canonical model list lives in **`models.txt`** — one `<runner> <model>` per
