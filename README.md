@@ -147,6 +147,25 @@ git show results:evaluations/2026-07-01.md   # full combined evaluation
 
 The `results` branch contains no answer keys, so it is safe to `git push origin results`.
 
+## Analyzing a run (LLM review)
+
+`prompts/analyze-run.md` is a reusable analyst prompt: summary breakdown,
+solution reviews (root-causing failures, judging solution quality from the
+diffs), and an efficiency analysis that **normalizes** across providers — Claude
+(agentic, real `cost_usd`, heavy cached input over many turns) vs Ollama
+(one-shot, `$0`, whole-file outputs) report on different axes, so it splits
+fresh-vs-cached tokens, ranks cost only within Claude, and compares per-task.
+
+`scripts/analyze_run.sh` bundles the prompt with a run's data (evaluation +
+diffs + raw usage JSON) into one input:
+
+```bash
+./scripts/analyze_run.sh                 # latest run on the results branch
+./scripts/analyze_run.sh 2026-07-01      # a specific run
+claude -p "$(./scripts/analyze_run.sh)"  # get the review from Claude
+./scripts/analyze_run.sh | pbcopy        # or paste into any model
+```
+
 ## How to run a single model by hand
 
 1. Start from a **clean checkout** of a project (no prior model's edits).
