@@ -108,15 +108,24 @@ separately from the code:
 ./scripts/snapshot.sh 2026-07-01      # explicit date/label
 ```
 
-It uses git plumbing — the working tree and current branch are never touched.
-Browse snapshots without checking the branch out:
+For a **combined evaluation** — the leaderboard plus each failure's reproduced
+output plus every model's per-task diff, consolidated from the `model/*`
+branches into one doc:
 
 ```bash
-git ls-tree -r --name-only results        # list all runs/*.md
-git show results:runs/2026-07-01.md       # view one
+./scripts/evaluate.sh                 # evaluations/<today>.md on branch `results`
 ```
 
-The `results` branch contains no answers, so it is safe to `git push origin results`.
+Both scripts use git plumbing — the working tree and current branch are never
+touched. Browse without checking the branch out:
+
+```bash
+git ls-tree -r --name-only results        # list runs/*.md + evaluations/*.md
+git show results:runs/2026-07-01.md          # leaderboard snapshot
+git show results:evaluations/2026-07-01.md   # full combined evaluation
+```
+
+The `results` branch contains no answer keys, so it is safe to `git push origin results`.
 
 ## How to run a single model by hand
 
