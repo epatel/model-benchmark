@@ -45,8 +45,10 @@ cmd="${1:-help}"; shift || true
 case "$cmd" in
   start)
     m="${1:?usage: bench.sh start <model>}"
-    git checkout -q "$BASE"
-    git checkout -B "model/$m" >/dev/null
+    # Explicit start point: safe in secondary worktrees (where checking out
+    # $BASE itself would fail because it's checked out elsewhere) and can
+    # never silently cut the branch from a stale/graded HEAD.
+    git checkout -q -B "model/$m" "$BASE"
     echo "On branch model/$m (clean task state)."
     echo "Let the model edit files, then: bench.sh grade $m"
     ;;
@@ -97,7 +99,7 @@ case "$cmd" in
           printf "\n  }\n}\n";
         }' > "reports/$m.metrics.json"
 
-    git checkout -q "$BASE"
+    git checkout -q "$BASE" 2>/dev/null || git checkout -q --detach "$BASE"
     edits="$(sed -n 's/.*"files": \([0-9]*\), "insertions": \([0-9]*\), "deletions": \([0-9]*\).*/\1 files, +\2 -\3/p' "reports/$m.metrics.json" | head -1)"
     echo "Graded model/$m -> reports/$m.txt (overall exit $rc; edits: ${edits:-n/a})"
     ;;
@@ -109,7 +111,7 @@ case "$cmd" in
 
   clean)
     m="${1:?usage: bench.sh clean <model>}"
-    git checkout -q "$BASE"
+    git checkout -q "$BASE" 2>/dev/null || git checkout -q --detach "$BASE"
     git branch -D "model/$m" "grade/$m" 2>/dev/null || true
     echo "removed model/$m and grade/$m"
     ;;
