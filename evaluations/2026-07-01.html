@@ -2,6 +2,14 @@
 <title>Evaluation 2026-07-01</title>
 <style>
 
+        table.diff {font-family:Courier; border:medium;}
+        .diff_header {background-color:#e0e0e0}
+        td.diff_header {text-align:right}
+        .diff_next {background-color:#c0c0c0}
+        .diff_add {background-color:#aaffaa}
+        .diff_chg {background-color:#ffff77}
+        .diff_sub {background-color:#ffaaaa}
+
 :root{color-scheme:light dark}
 body{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:24px;max-width:1200px;margin:auto}
 h1{margin:0 0 4px}h2{margin-top:36px;border-bottom:2px solid #8884;padding-bottom:4px}
@@ -18,24 +26,20 @@ details>summary{cursor:pointer;padding:6px 10px;background:#8881;border-radius:6
 details[open]>summary{border-bottom:1px solid #8883;border-radius:6px 6px 0 0}
 .fail-summary{color:#c62828}
 pre.fail{background:#e5393511;padding:10px;overflow:auto;border-radius:0 0 6px 6px;margin:0}
-.diffwrap{overflow:auto;padding:6px}
-table.diff{font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;border-collapse:collapse;width:100%}
-table.diff td{padding:0 6px;vertical-align:top;white-space:pre}
-.diff_header{background:#8882;color:#888;text-align:right;user-select:none}
-td.diff_header{padding-right:8px}
-.diff_next{background:#8881}
-.diff_add{background:#3faf4633}
-.diff_chg{background:#f9a82533}
-.diff_sub{background:#e5393533}
 
+/* Diffs: force a light, high-contrast (GitHub-like) surface with DARK text,
+   independent of the page's dark mode, so highlighted cells stay legible. */
+.diffwrap{overflow:auto;padding:0;background:#fff;border-radius:0 0 6px 6px}
+.diffwrap>div{color:#57606a;padding:8px 8px 2px}
+table.diff{background:#fff;color:#1f2328;border-collapse:collapse;width:100%;
+           font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px}
+table.diff td{padding:0 6px;vertical-align:top;white-space:pre;color:#1f2328}
+table.diff .diff_header{background:#f6f8fa;color:#8c959f;text-align:right;user-select:none;padding-right:8px}
+table.diff .diff_next{background:#f6f8fa;color:#8c959f}
+table.diff .diff_add{background:#d1f8d9;color:#1f2328}
+table.diff .diff_chg{background:#fff3c9;color:#1f2328}
+table.diff .diff_sub{background:#ffd0cd;color:#1f2328}
 
-        table.diff {font-family:Courier; border:medium;}
-        .diff_header {background-color:#e0e0e0}
-        td.diff_header {text-align:right}
-        .diff_next {background-color:#c0c0c0}
-        .diff_add {background-color:#aaffaa}
-        .diff_chg {background-color:#ffff77}
-        .diff_sub {background-color:#ffaaaa}
 </style></head><body>
 <h1>Combined evaluation — 2026-07-01</h1>
 <div class=sub>7 models &times; 8 tasks · grading = hidden-test oracle · diffs vs <code>main</code></div>
