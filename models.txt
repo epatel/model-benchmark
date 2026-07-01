@@ -8,6 +8,7 @@
 claude  haiku
 claude  sonnet
 claude  opus
+claude  fable
 
 ollama  glm-5.2:cloud
 ollama  gemma4:cloud
