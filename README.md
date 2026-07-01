@@ -14,25 +14,10 @@ tests) live on a separate `grading` branch, so a model working on the clean
 - **claude** CLI — for `run_models.sh` (agentic runner)
 - **ollama** ≥ 0.30 — for `run_ollama.sh` (local models, or `:cloud` models after sign-in)
 
-## Latest results (2026-07-01)
+## Results
 
-Snapshotted on the `results` branch (`runs/2026-07-01.md`); regenerate with
-`python3 scripts/summarize.py`.
-
-```
-model                  | pass |    time |   in tok |  out tok | turns |  cost USD |    edits(+/-)
-sonnet                 |  8/8 |    164s |  1693.2k |     8.3k |    45 |    1.6244 | +124/-67 (9f)
-opus                   |  8/8 |    174s |   941.1k |     7.7k |    37 |    1.9983 | +128/-66 (9f)
-haiku                  |  8/8 |    227s |  1288.3k |    17.0k |    44 |    0.4335 | +124/-65 (9f)
-gemma4:31b-cloud       |  7/8 |     33s |     5.0k |     2.8k |     8 |    0.0000 | +116/-60 (8f)   (failed: 06-deadlock)
-glm-5.2:cloud          |  7/8 |    328s |     4.4k |    12.5k |     8 |    0.0000 | +165/-72 (9f)   (failed: 03-csv-parser)
-nemotron-3-super:cloud |  7/8 |    468s |     4.7k |    24.9k |     8 |    0.0000 | +131/-66 (8f)   (failed: 03-csv-parser)
-kimi-k2.7-code:cloud   |  6/8 |     99s |     4.4k |     8.3k |     8 |    0.0000 |  +94/-19 (7f)   (failed: 03-csv, 06-deadlock)
-```
-
-The three Claude models sweep 8/8; cloud models each drop a different task —
-concurrency (02/06) and the csv edge case (03) are the dividers. Cloud `cost`
-shows `$0` because Ollama does not report pricing.
+Run results are snapshotted to the `results` branch as `runs/<date>.md`, and the
+live combined table is always available via `python3 scripts/summarize.py`.
 
 ## Projects
 
