@@ -2,7 +2,37 @@
 
 A small, self-contained suite of coding tasks for evaluating AI model output.
 Each project has a **ground-truth oracle** (a test suite or stress harness) so
-scoring is objective rather than eyeballed.
+scoring is objective rather than eyeballed. Answers (`SOLUTION.md` + hidden
+tests) live on a separate `grading` branch, so a model working on the clean
+`main` branch can't see them.
+
+## Requirements
+
+- **python3** — projects 01/03/05/07/08 and all scoring scripts
+- **go** — projects 02, 06 (`go test -race`)
+- **node** — project 04 (`node --test`)
+- **claude** CLI — for `run_models.sh` (agentic runner)
+- **ollama** ≥ 0.30 — for `run_ollama.sh` (local models, or `:cloud` models after sign-in)
+
+## Latest results (2026-07-01)
+
+Snapshotted on the `results` branch (`runs/2026-07-01.md`); regenerate with
+`python3 scripts/summarize.py`.
+
+```
+model                  | pass |    time |   in tok |  out tok | turns |  cost USD |    edits(+/-)
+sonnet                 |  8/8 |    164s |  1693.2k |     8.3k |    45 |    1.6244 | +124/-67 (9f)
+opus                   |  8/8 |    174s |   941.1k |     7.7k |    37 |    1.9983 | +128/-66 (9f)
+haiku                  |  8/8 |    227s |  1288.3k |    17.0k |    44 |    0.4335 | +124/-65 (9f)
+gemma4:31b-cloud       |  7/8 |     33s |     5.0k |     2.8k |     8 |    0.0000 | +116/-60 (8f)   (failed: 06-deadlock)
+glm-5.2:cloud          |  7/8 |    328s |     4.4k |    12.5k |     8 |    0.0000 | +165/-72 (9f)   (failed: 03-csv-parser)
+nemotron-3-super:cloud |  7/8 |    468s |     4.7k |    24.9k |     8 |    0.0000 | +131/-66 (8f)   (failed: 03-csv-parser)
+kimi-k2.7-code:cloud   |  6/8 |     99s |     4.4k |     8.3k |     8 |    0.0000 |  +94/-19 (7f)   (failed: 03-csv, 06-deadlock)
+```
+
+The three Claude models sweep 8/8; cloud models each drop a different task —
+concurrency (02/06) and the csv edge case (03) are the dividers. Cloud `cost`
+shows `$0` because Ollama does not report pricing.
 
 ## Projects
 
@@ -69,20 +99,14 @@ Each model run produces, in `reports/`:
 - `<model>.usage.json` — time / tokens / turns / cost (mapped to one schema)
 
 **Combined comparison table** across every model that has reports (Claude +
-Ollama together):
+Ollama together) — sorted best-first, with time / tokens / cost / edits:
 
 ```bash
-python3 scripts/summarize.py            # results grid + efficiency table
+python3 scripts/summarize.py
 ```
 
-To run everything for one big table (sequentially — the runners share the git
-repo and must not overlap):
-
-```bash
-./run_ollama.sh kimi-k2.5:cloud gemma4:31b-cloud nemotron-3-super:cloud \
-  && ./run_models.sh haiku sonnet opus \
-  && python3 scripts/summarize.py
-```
+To run every model in one shot, use `./run_all.sh` (above) instead of chaining
+the runners by hand.
 
 Notes when comparing across runners: Ollama models return whole files, so their
 **edit-count** looks larger than Claude's surgical diffs; and cloud **cost**
@@ -140,3 +164,10 @@ Test pass/fail is the hard gate. For richer comparison also capture per run:
 edits made, files touched, whether unrelated tests broke, time/tokens.
 For the refactor (05), gate on tests then judge structure separately
 (complexity/duplication reduction), optionally with an LLM-as-judge rubric.
+
+## See also
+
+- **`WORKFLOW.md`** — the git branch model (`main` / `grading` / `model/*` /
+  `grade/*`), how grading cherry-picks the hidden tests, and the anti-tamper step.
+- **`PLAN.md`** — roadmap and what's done (tiers, runners, snapshots, next steps).
+- **`models.txt`** — the canonical list of models to benchmark.
