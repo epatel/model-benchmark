@@ -20,7 +20,7 @@ git config core.hooksPath .githooks
 
 ## Requirements
 
-- **python3** — projects 01/03/05/07/08 and all scoring scripts
+- **python3** — projects 01/03/05/07/08/09 and all scoring scripts
 - **go** — projects 02, 06 (`go test -race`)
 - **node** — project 04 (`node --test`)
 - **claude** CLI — for `run_models.sh` (agentic runner)
