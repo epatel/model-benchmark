@@ -75,7 +75,10 @@ h1{margin:0 0 4px}h2{margin-top:36px;border-bottom:2px solid #8884;padding-botto
 .sub{color:#888;margin-bottom:20px}
 table.grid{border-collapse:collapse;margin:10px 0;font-size:13px}
 table.grid th,table.grid td{border:1px solid #8883;padding:5px 9px;text-align:center;white-space:nowrap}
-table.grid th{background:#8881;position:sticky;top:0}
+table.grid th{background:#8881;position:sticky;top:0;cursor:pointer;user-select:none}
+table.grid th:hover{background:#8882}
+table.grid th.asc::after{content:" \\25B2";font-size:10px}
+table.grid th.desc::after{content:" \\25BC";font-size:10px}
 table.grid td.model,table.grid th.model{text-align:left;font-weight:600}
 td.num{text-align:right;font-variant-numeric:tabular-nums}
 .pass{background:#3faf4622;color:#2e7d32;font-weight:600}
@@ -188,5 +191,40 @@ for p in projects:
             w(hd.make_table(a, b, BASE, m, context=True, numlines=3))
         w("</div></details>")
 
+# ---- sortable grid tables (click a column header) ----
+w("""<script>
+document.querySelectorAll('table.grid').forEach(function (tbl) {
+  var head = tbl.rows[0];
+  Array.prototype.forEach.call(head.cells, function (th, ci) {
+    th.addEventListener('click', function () {
+      var dir = th.classList.contains('asc') ? -1 : 1;
+      Array.prototype.forEach.call(head.cells, function (h) { h.classList.remove('asc', 'desc'); });
+      th.classList.add(dir === 1 ? 'asc' : 'desc');
+      var rows = Array.prototype.slice.call(tbl.rows, 1);
+      function val(row) {
+        var t = (row.cells[ci] ? row.cells[ci].textContent : '').trim();
+        if (t === 'PASS') return 1;
+        if (t === 'FAIL') return 0;
+        if (!/^[+$]?-?[.\\d]/.test(t)) return null;  // text cells (model names) sort as strings
+        var m = t.match(/-?\\d+(\\.\\d+)?/);
+        if (!m) return null;
+        var n = parseFloat(m[0]);
+        if (t.charAt(m.index + m[0].length) === 'k') n *= 1000;
+        return n;
+      }
+      rows.sort(function (a, b) {
+        var va = val(a), vb = val(b);
+        if (va === null && vb === null)
+          return dir * a.cells[ci].textContent.trim()
+                        .localeCompare(b.cells[ci].textContent.trim());
+        if (va === null) return 1;   // non-numeric rows sink
+        if (vb === null) return -1;
+        return dir * (va - vb);
+      });
+      rows.forEach(function (r) { tbl.tBodies[0].appendChild(r); });
+    });
+  });
+});
+</script>""")
 w("</body></html>")
 sys.stdout.write("\n".join(out))
