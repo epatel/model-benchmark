@@ -25,6 +25,7 @@ git config core.hooksPath .githooks
 - **node** — project 04 (`node --test`)
 - **claude** CLI — for `run_models.sh` (agentic runner)
 - **ollama** ≥ 0.30 — for `run_ollama.sh` (local models, or `:cloud` models after sign-in)
+- **openssl** — to decrypt the answer key (`scripts/unpack_grading.sh`)
 
 ## Results
 
@@ -43,7 +44,8 @@ live combined table is always available via `python3 scripts/summarize.py`.
 | 04 | `rest-pagination` | Node/JS | Add a feature | `node --test` |
 | 05 | `god-refactor` | Python | Refactor (behavior preserved) | `unittest` |
 
-**Tier 2** (harder — designed to discriminate between strong models):
+**Tier 2** (harder — designed to discriminate between strong models; in
+practice 06 and 08 have caused every failure across published runs):
 
 | # | Project | Lang | Task type | Oracle |
 |---|---------|------|-----------|--------|
@@ -67,6 +69,12 @@ bug itself. The hidden tests then punish both inaction (adversarial perf cases
 under a watchdog) and careless rewrites (class-bracket edge cases like `[]]`,
 `[!]]`, unterminated `[`; no delegating to a regex engine).
 
+Honesty note from published runs so far: every model passes 09 — the
+"exponential recursion → memoize" pattern is universally recognized. In
+practice tier-3 discriminates on *solution quality* (a surgical ~40-line memo
+vs a ~120-line rewrite with dead code), which shows up in the edit stats and
+run reviews rather than pass/fail.
+
 ## Running models automatically (recommended)
 
 The canonical model list lives in **`models.txt`** — one `<runner> <model>` per
@@ -77,11 +85,18 @@ leaderboard with one command:
 ./run_all.sh                 # runs everything in models.txt
 ./run_all.sh my-models.txt   # a different list
 DRY=1 ./run_all.sh           # print the plan, run nothing
+SNAPSHOT=0 ./run_all.sh      # skip the automatic results-branch snapshot
 ```
 
-`run_all.sh` calls the two runners below in sequence (they share the git repo
-and must not overlap). To run a subset directly, call a runner with explicit
-model args instead.
+`run_all.sh` calls the two runners below in sequence. To run a subset
+directly, call a runner with explicit model args instead.
+
+Two runners must not overlap **in the same worktree** (they check out
+branches), but they can run in parallel across git worktrees — one runner per
+worktree with disjoint model sets, then copy the second worktree's
+`reports/<model>.*` back before summarizing. `bench.sh` is worktree-safe; see
+the recipe in `AGENTS.md`. In practice this cuts a full run's wall time by
+roughly a third (the slowest single model is the floor).
 
 Two umbrella runners drive every task for every model, then grade + tabulate.
 Both share the git harness (see `WORKFLOW.md`) and write to `reports/`.
@@ -96,7 +111,7 @@ Both share the git harness (see `WORKFLOW.md`) and write to `reports/`.
 and writes back the model's file edits):
 
 ```bash
-./run_ollama.sh glm-5.2:cloud kimi-k2.5:cloud   # cloud
+./run_ollama.sh glm-5.2:cloud kimi-k2.7-code:cloud   # cloud
 ./run_ollama.sh llama3.1                         # local
 #   env: OLLAMA_URL (default http://localhost:11434)
 ```
@@ -178,6 +193,16 @@ claude -p "$(./scripts/analyze_run.sh)"  # get the review from Claude
 ./scripts/analyze_run.sh | pbcopy        # or paste into any model
 ```
 
+To publish the review next to the run it reviews (and link it from the live
+landing page):
+
+```bash
+./scripts/analyze_run.sh | claude -p - > review.md
+./scripts/publish_review.sh review.md            # -> results:evaluations/<date>-review.md
+./scripts/build_index.sh                         # refresh the landing page (links review + evaluation + snapshot)
+git push origin results
+```
+
 ## How to run a single model by hand
 
 1. Start from a **clean checkout** of a project (no prior model's edits).
@@ -206,9 +231,12 @@ claude -p "$(./scripts/analyze_run.sh)"  # get the review from Claude
 ## Scoring guidance
 
 Test pass/fail is the hard gate. For richer comparison also capture per run:
-edits made, files touched, whether unrelated tests broke, time/tokens.
-For the refactor (05), gate on tests then judge structure separately
-(complexity/duplication reduction), optionally with an LLM-as-judge rubric.
+edits made, files touched, whether unrelated tests broke, time/tokens — the
+runners record all of these in `reports/`, and the run review
+(`scripts/analyze_run.sh`) judges solution quality from the diffs. For the
+refactor (05), gate on tests then judge structure separately
+(complexity/duplication reduction). A per-task LLM-as-judge rubric is an idea,
+not built; today the closest thing is the review's solution-quality section.
 
 ## Grading answer key (encrypted)
 
@@ -244,5 +272,8 @@ share the password out-of-band instead.
 
 - **`WORKFLOW.md`** — the git branch model (`main` / `grading` / `model/*` /
   `grade/*`), how grading cherry-picks the hidden tests, and the anti-tamper step.
+- **`AGENTS.md`** — the runbook for **adding a new task** (golden rules, oracle
+  verification both ways, the grading-branch dance) plus the parallel-worktree
+  recipe. `scripts/new_project.sh` automates the scaffold + branch dance.
 - **`PLAN.md`** — roadmap and what's done (tiers, runners, snapshots, next steps).
 - **`models.txt`** — the canonical list of models to benchmark.
