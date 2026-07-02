@@ -12,9 +12,9 @@ claude  fable
 
 ollama  glm-5.2:cloud
 ollama  gemma4:cloud
-ollama  nemotron-3-ultra:cloud
 ollama  kimi-k2.7-code:cloud
 
 # add more, e.g.:
+# ollama  nemotron-3-ultra:cloud
 # ollama  kimi-k2.5:cloud
 # ollama  llama3.1            (a local model)
