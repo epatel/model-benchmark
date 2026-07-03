@@ -15,6 +15,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.request
 
 URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
@@ -64,17 +65,27 @@ def build_prompt(proj, files):
     return "\n".join(parts)
 
 
-def chat(model, prompt):
+def chat(model, prompt, retries=2):
     body = json.dumps({
         "model": model,
         "stream": False,
         "options": {"temperature": 0},
         "messages": [{"role": "user", "content": prompt}],
     }).encode()
-    req = urllib.request.Request(URL + "/api/chat", data=body,
-                                 headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-        return json.load(r)
+    # Cloud calls occasionally stall mid-read; retry a couple of times so a
+    # transient hiccup doesn't record a bogus FAIL for an unsolved task.
+    for attempt in range(retries + 1):
+        req = urllib.request.Request(URL + "/api/chat", data=body,
+                                     headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+                return json.load(r)
+        except (TimeoutError, OSError) as e:
+            if attempt == retries:
+                raise
+            print(f"    (attempt {attempt + 1} failed: {e} — retrying)",
+                  file=sys.stderr)
+            time.sleep(5 * (attempt + 1))
 
 
 FENCE = re.compile(r"^```[^\n]*\n(.*)\n```$", re.DOTALL)
