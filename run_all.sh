@@ -16,17 +16,20 @@ CONF="${1:-models.txt}"
 
 claude_models=()
 ollama_models=()
+ollama_cc_models=()
 while read -r runner model _rest; do
   [ -z "${runner:-}" ] && continue
   case "$runner" in
     \#*) continue ;;
     claude) claude_models+=("$model") ;;
     ollama) ollama_models+=("$model") ;;
+    ollama-cc) ollama_cc_models+=("$model") ;;
     *) echo "warning: unknown runner '$runner' (model '$model') — skipped" ;;
   esac
 done < "$CONF"
 
 if [ ${#ollama_models[@]} -gt 0 ]; then echo "ollama: ${ollama_models[*]}"; else echo "ollama: (none)"; fi
+if [ ${#ollama_cc_models[@]} -gt 0 ]; then echo "ollama-cc (agentic via claude CLI): ${ollama_cc_models[*]}"; fi
 if [ ${#claude_models[@]} -gt 0 ]; then echo "claude: ${claude_models[*]}"; else echo "claude: (none)"; fi
 
 if [ -n "${DRY:-}" ]; then
@@ -34,8 +37,9 @@ if [ -n "${DRY:-}" ]; then
   exit 0
 fi
 
-# Sequential: the two runners share the git repo and must not overlap.
+# Sequential: the runners share the git repo and must not overlap (in one worktree).
 if [ ${#ollama_models[@]} -gt 0 ]; then ./run_ollama.sh "${ollama_models[@]}"; fi
+if [ ${#ollama_cc_models[@]} -gt 0 ]; then ./run_ollama_cc.sh "${ollama_cc_models[@]}"; fi
 if [ ${#claude_models[@]} -gt 0 ]; then ./run_models.sh "${claude_models[@]}"; fi
 
 echo "============================================================"

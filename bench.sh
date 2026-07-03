@@ -58,9 +58,11 @@ case "$cmd" in
     git rev-parse --verify -q "refs/heads/model/$m" >/dev/null \
       || { echo "no branch model/$m (run: bench.sh start $m)"; exit 1; }
 
-    # Commit any pending model edits so they are included.
+    # Commit any pending model edits so they are included. Scoped to
+    # projects/ so untracked maintainer files (WIP scripts etc.) in the
+    # working tree are never swept into the model's commit.
     git checkout -q "model/$m"
-    git add -A
+    git add -A -- projects/
     git commit -q -m "model work: $m" 2>/dev/null || true
 
     # Disposable grading branch = model work + hidden tests.

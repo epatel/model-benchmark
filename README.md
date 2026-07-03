@@ -116,6 +116,20 @@ and writes back the model's file edits):
 #   env: OLLAMA_URL (default http://localhost:11434)
 ```
 
+**Ollama models, agentic** (`ollama-cc` in `models.txt`) — the same Ollama
+models driven through the `claude` CLI via Ollama's [Anthropic-compatible
+endpoint](https://docs.ollama.com/api/anthropic-compatibility), so they get
+the identical agentic harness as Claude models (read TASK.md themselves,
+explore, edit with tools over turns). Labels get a `-cc` suffix so both
+harnesses of one model can sit side by side on the leaderboard:
+
+```bash
+./run_ollama_cc.sh glm-5.2:cloud     # -> reports/glm-5.2_cloud-cc.*
+```
+
+Caveats: no prompt caching (all input tokens are fresh — expect millions), and
+`cost_usd` is zeroed (Ollama reports no pricing).
+
 Each model run produces, in `reports/`:
 - `<model>.txt` — test log + `git diff --stat`
 - `<model>.results.json` — per-project pass/fail + seconds

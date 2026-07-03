@@ -17,4 +17,7 @@ ollama  kimi-k2.7-code:cloud
 # add more, e.g.:
 # ollama  nemotron-3-ultra:cloud
 # ollama  kimi-k2.5:cloud
-# ollama  llama3.1            (a local model)
+# ollama  llama3.1               (a local model)
+# ollama-cc  glm-5.2:cloud       (agentic: driven through the claude CLI
+#                                 via Ollama's Anthropic-compat endpoint;
+#                                 label gets a -cc suffix)
