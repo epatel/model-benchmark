@@ -75,6 +75,55 @@ practice tier-3 discriminates on *solution quality* (a surgical ~40-line memo
 vs a ~120-line rewrite with dead code), which shows up in the edit stats and
 run reviews rather than pass/fail.
 
+## Script map
+
+How the scripts call each other, from a full run to the published site:
+
+```mermaid
+flowchart TD
+    subgraph RUN["Run (solve + grade every model)"]
+        runall["./run_all.sh<br/><i>reads models.txt</i>"]
+        runall --> ollama["run_ollama.sh<br/><i>one-shot adapter</i>"]
+        runall --> occ["run_ollama_cc.sh<br/><i>agentic via claude CLI +<br/>Ollama Anthropic-compat</i>"]
+        runall --> claude["run_models.sh<br/><i>agentic via claude CLI</i>"]
+        ollama --> solve["scripts/ollama_solve.py<br/><i>1 HTTP call/task, writes files</i>"]
+        ollama & occ & claude --> usage["scripts/usage.py<br/><i>logs → model.usage.json</i>"]
+        ollama & occ & claude --> bench["bench.sh start / grade<br/><i>branch dance, cherry-pick grading,<br/>CANON anti-tamper</i>"]
+        bench --> tests["scripts/run_all.sh<br/><i>oracle: all projects</i>"]
+        tests --> one["scripts/run_one.sh<br/><i>visible + hidden tests</i>"]
+    end
+
+    subgraph PUB["Publish (results branch, git plumbing)"]
+        runall --> summarize["scripts/summarize.py<br/><i>combined leaderboard</i>"]
+        runall --> snapshot["scripts/snapshot.sh<br/><i>runs/date.md</i>"]
+        evaluate["scripts/evaluate.sh<br/><i>evaluations/date.md</i>"]
+        ehtml["scripts/evaluate_html.sh"] --> rhtml["scripts/report_html.py<br/><i>sortable tables + diffs →<br/>evaluations/date.html</i>"]
+        index["scripts/build_index.sh<br/><i>landing page index.html</i>"]
+        ehtml --> index
+    end
+
+    subgraph REVIEW["Review (LLM analysis of a run)"]
+        analyze["scripts/analyze_run.sh<br/><i>prompts/analyze-run.md + run data</i>"]
+        analyze -->|"piped to: claude -p -"| review["review.md"]
+        review --> pubrev["scripts/publish_review.sh<br/><i>evaluations/date-review.md</i>"]
+        pubrev --> index
+    end
+
+    subgraph KEY["Answer key (anti-contamination)"]
+        pack["scripts/pack_grading.sh<br/><i>grading branch → grading.enc</i>"]
+        unpack["scripts/unpack_grading.sh<br/><i>grading.enc → grading branch</i>"]
+    end
+
+    snapshot -.-> evaluate
+    evaluate -.-> ehtml
+    ehtml -.-> analyze
+```
+
+Dashed arrows are the usual order you run them in after a run; everything in
+**Publish**/**Review** commits to the `results` branch without touching your
+working tree. `scripts/new_project.sh` (not shown) scaffolds a new task and
+does the `grading`-branch dance — see `AGENTS.md`.
+
 ## Running models automatically (recommended)
 
 The canonical model list lives in **`models.txt`** — one `<runner> <model>` per
