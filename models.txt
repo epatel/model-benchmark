@@ -14,6 +14,10 @@ ollama  glm-5.2:cloud
 ollama  gemma4:cloud
 ollama  kimi-k2.7-code:cloud
 
+ollama-cc  glm-5.2:cloud
+ollama-cc  gemma4:cloud
+ollama-cc  kimi-k2.7-code:cloud
+
 # add more, e.g.:
 # ollama  nemotron-3-ultra:cloud
 # ollama  kimi-k2.5:cloud
