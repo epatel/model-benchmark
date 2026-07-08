@@ -23,7 +23,7 @@ git config core.hooksPath .githooks
 - **python3** — projects 01/03/05/07/08/09 and all scoring scripts
 - **go** — projects 02, 06 (`go test -race`)
 - **node** — project 04 (`node --test`)
-- **claude** CLI — for `run_models.sh` (agentic runner)
+- **claude** CLI — for `run_models.sh` and `run_ollama_cc.sh` (agentic runners)
 - **ollama** ≥ 0.30 — for `run_ollama.sh` (local models, or `:cloud` models after sign-in)
 - **openssl** — to decrypt the answer key (`scripts/unpack_grading.sh`)
 
@@ -45,7 +45,8 @@ live combined table is always available via `python3 scripts/summarize.py`.
 | 05 | `god-refactor` | Python | Refactor (behavior preserved) | `unittest` |
 
 **Tier 2** (harder — designed to discriminate between strong models; in
-practice 06 and 08 have caused every failure across published runs):
+practice 06 and 08 cause most failures across published runs, with 03's
+hidden edge case an occasional third):
 
 | # | Project | Lang | Task type | Oracle |
 |---|---------|------|-----------|--------|
@@ -127,8 +128,8 @@ does the `grading`-branch dance — see `AGENTS.md`.
 ## Running models automatically (recommended)
 
 The canonical model list lives in **`models.txt`** — one `<runner> <model>` per
-line (`claude` or `ollama`). Run **every** listed model and print the combined
-leaderboard with one command:
+line (`claude`, `ollama`, or `ollama-cc`). Run **every** listed model and print
+the combined leaderboard with one command:
 
 ```bash
 ./run_all.sh                 # runs everything in models.txt
@@ -137,18 +138,18 @@ DRY=1 ./run_all.sh           # print the plan, run nothing
 SNAPSHOT=0 ./run_all.sh      # skip the automatic results-branch snapshot
 ```
 
-`run_all.sh` calls the two runners below in sequence. To run a subset
+`run_all.sh` calls the three runners below in sequence. To run a subset
 directly, call a runner with explicit model args instead.
 
-Two runners must not overlap **in the same worktree** (they check out
+Runners must not overlap **in the same worktree** (they check out
 branches), but they can run in parallel across git worktrees — one runner per
 worktree with disjoint model sets, then copy the second worktree's
 `reports/<model>.*` back before summarizing. `bench.sh` is worktree-safe; see
 the recipe in `AGENTS.md`. In practice this cuts a full run's wall time by
 roughly a third (the slowest single model is the floor).
 
-Two umbrella runners drive every task for every model, then grade + tabulate.
-Both share the git harness (see `WORKFLOW.md`) and write to `reports/`.
+Three umbrella runners drive every task for every model, then grade + tabulate.
+All share the git harness (see `WORKFLOW.md`) and write to `reports/`.
 
 **Claude models** (agentic — edits files itself via `claude -p`):
 
@@ -252,9 +253,12 @@ diffs + raw usage JSON) into one input:
 ```bash
 ./scripts/analyze_run.sh                 # latest run on the results branch
 ./scripts/analyze_run.sh 2026-07-01      # a specific run
-claude -p "$(./scripts/analyze_run.sh)"  # get the review from Claude
+./scripts/analyze_run.sh | claude -p -   # get the review from Claude (stdin)
 ./scripts/analyze_run.sh | pbcopy        # or paste into any model
 ```
+
+(Prefer piping over `claude -p "$(...)"` — the bundle is ~170 kB and growing,
+and a command-line argument that size eventually hits `ARG_MAX`.)
 
 To publish the review next to the run it reviews (and link it from the live
 landing page):

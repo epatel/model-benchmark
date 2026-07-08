@@ -5,8 +5,9 @@
 #
 #   ./scripts/analyze_run.sh                 # latest run on the results branch
 #   ./scripts/analyze_run.sh 2026-07-01      # a specific run
-#   ./scripts/analyze_run.sh | claude -p -   # analyze with Claude (stdin)
-#   claude -p "$(./scripts/analyze_run.sh)"  # or as an argument
+#   ./scripts/analyze_run.sh | claude -p -   # analyze with Claude (stdin;
+#                                            # don't pass as an argument — the
+#                                            # bundle grows and can hit ARG_MAX)
 #   ./scripts/analyze_run.sh | pbcopy        # copy to clipboard (macOS)
 set -euo pipefail
 cd "$(dirname "$0")/.."
