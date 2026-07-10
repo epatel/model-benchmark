@@ -90,9 +90,13 @@ version-based) conflict detection, no read-set tracking, and O(n) full-copy
 snapshots. All visible tests pass on the seeded code. The trap is asymmetric:
 fixing the perf complaint by dropping the copy breaks snapshot reads unless
 the model builds real version chains, and hidden probes also punish
-*over*-fixing (aborting read-only txns, counting own-write reads). Validation
-run: one-shot gpt-5.4 (9/9 on tiers 1–3) fails it on exactly that trap, while
-agentic gpt-5.4-cc — which ran the visible tests and iterated — passes.
+*over*-fixing (aborting read-only txns, counting own-write reads).
+
+Outcome across the full matrix (2026-07-10): tier-4 splits on **harness**, not
+just model — every frontier one-shot entry except kimi (gpt-5.4, gpt-5.5,
+gpt-5.6-luna, glm-5.2) falls into the snapshot trap, while the same models
+agentically (able to run the visible tests and iterate) build correct MVCC
+and pass. kimi-k2.7-code is the only model that solved it one-shot.
 
 ## Script map
 
@@ -101,7 +105,9 @@ How the scripts call each other, from a full run to the published site:
 ```mermaid
 flowchart TD
     subgraph RUN["Run (solve + grade every model)"]
+        matrix["scripts/matrix.py<br/><i>menu/CLI: any models×projects slice,<br/>resume-aware; also evaluate/analyze/publish</i>"]
         runall["./run_all.sh<br/><i>reads models.txt</i>"]
+        matrix -.-> runall
         runall --> ollama["run_ollama.sh<br/><i>one-shot adapter</i>"]
         runall --> occ["run_ollama_cc.sh<br/><i>agentic via claude CLI +<br/>Ollama Anthropic-compat</i>"]
         runall --> openai["run_openai.sh<br/><i>one-shot adapter</i>"]
@@ -159,8 +165,24 @@ DRY=1 ./run_all.sh           # print the plan, run nothing
 SNAPSHOT=0 ./run_all.sh      # skip the automatic results-branch snapshot
 ```
 
-`run_all.sh` calls the five runners below in sequence. To run a subset
-directly, call a runner with explicit model args instead.
+`run_all.sh` calls the five runners below in sequence. For anything more
+surgical than "everything", use **`scripts/matrix.py`** — an interactive menu
+and CLI over the same machinery that runs any models × projects slice:
+
+```bash
+scripts/matrix.py                        # interactive menu
+scripts/matrix.py run -p 10              # ONE project across ALL models —
+                                         #   resumes each model/<label> branch so
+                                         #   earlier solutions still count
+scripts/matrix.py run -m gpt-5.4-cc -p 06 --fresh   # one cell, re-solved from seed
+scripts/matrix.py status                 # pass/fail matrix from reports/
+scripts/matrix.py evaluate && scripts/matrix.py analyze && scripts/matrix.py publish
+```
+
+This is how a newly added task gets folded into existing results without
+re-running (or re-paying for) the whole suite. It also manages the `openai-cc`
+LiteLLM proxy itself. To run a subset with the shell runners instead, call a
+runner with explicit model args.
 
 Runners must not overlap **in the same worktree** (they check out
 branches), but they can run in parallel across git worktrees — one runner per
@@ -220,8 +242,11 @@ this measures the model *through the LiteLLM bridge*, not its native harness:
 #   env: OPENAI_API_KEY (required), LITELLM_PORT (default 4141)
 ```
 
-Caveats: no prompt caching (all input tokens are fresh — expect millions), and
-`cost_usd` is zeroed (Ollama reports no pricing).
+Caveats for both `-cc` runners: no prompt caching (all input tokens are fresh —
+expect millions per model), and `cost_usd` is zeroed (the claude CLI invents
+prices for unknown models; neither Ollama nor the LiteLLM bridge reports real
+ones). Preview-tier OpenAI models may also have TPM quotas too small for the
+uncached agentic harness — see the `gpt-5.6-luna` note in `models.txt`.
 
 Each model run produces, in `reports/`:
 - `<model>.txt` — test log + `git diff --stat`
@@ -229,8 +254,8 @@ Each model run produces, in `reports/`:
 - `<model>.metrics.json` — edit counts (files / insertions / deletions)
 - `<model>.usage.json` — time / tokens / turns / cost (mapped to one schema)
 
-**Combined comparison table** across every model that has reports (Claude +
-Ollama together) — sorted best-first, with time / tokens / cost / edits:
+**Combined comparison table** across every model that has reports (all five
+runners together) — sorted best-first, with time / tokens / cost / edits:
 
 ```bash
 python3 scripts/summarize.py
@@ -239,9 +264,10 @@ python3 scripts/summarize.py
 To run every model in one shot, use `./run_all.sh` (above) instead of chaining
 the runners by hand.
 
-Notes when comparing across runners: Ollama models return whole files, so their
-**edit-count** looks larger than Claude's surgical diffs; and cloud **cost**
-shows `$0` (Ollama does not report pricing).
+Notes when comparing across runners: one-shot adapter models (Ollama, OpenAI)
+return whole files, so their **edit-count** looks larger than the agentic
+runners' surgical diffs; and **cost** shows `$0` for every non-Anthropic model
+(no real pricing is reported through those paths).
 
 ## Consolidating results into a branch
 
@@ -285,10 +311,11 @@ The `results` branch contains no answer keys, so it is safe to `git push origin 
 
 `prompts/analyze-run.md` is a reusable analyst prompt: summary breakdown,
 solution reviews (root-causing failures, judging solution quality from the
-diffs), and an efficiency analysis that **normalizes** across providers — Claude
-(agentic, real `cost_usd`, heavy cached input over many turns) vs Ollama
-(one-shot, `$0`, whole-file outputs) report on different axes, so it splits
-fresh-vs-cached tokens, ranks cost only within Claude, and compares per-task.
+diffs), and an efficiency analysis that **normalizes** across runners — agentic
+entries (real turns, heavy cached input; Claude also reports real `cost_usd`)
+vs one-shot adapters (`$0`, whole-file outputs) report on different axes, so it
+splits fresh-vs-cached tokens, ranks cost only within Claude, and compares
+per-task.
 
 `scripts/analyze_run.sh` bundles the prompt with a run's data (evaluation +
 diffs + raw usage JSON) into one input:
@@ -387,3 +414,5 @@ share the password out-of-band instead.
   recipe. `scripts/new_project.sh` automates the scaffold + branch dance.
 - **`PLAN.md`** — roadmap and what's done (tiers, runners, snapshots, next steps).
 - **`models.txt`** — the canonical list of models to benchmark.
+- **`scripts/matrix.py`** — menu/CLI driver for any slice of the matrix, plus
+  the evaluate/analyze/publish chain.

@@ -39,8 +39,13 @@ big picture. This file is the **runbook for adding a new task ("project")**.
 - Go:     `go test -race -count=5 ./...`  (add a watchdog in tests for deadlocks)
 - Node:   `node --test`
 
-Runners (`run_all.sh`, `run_models.sh`, `run_ollama.sh`) and `scripts/summarize.py`
-auto-discover `projects/*`, so you do NOT edit them for a new project.
+Runners (`run_all.sh`, `run_models.sh`, `run_ollama*.sh`, `run_openai*.sh`,
+`scripts/matrix.py`) and `scripts/summarize.py` auto-discover `projects/*`, so
+you do NOT edit them for a new project.
+
+After a new project lands, fold it into existing results without re-running
+the whole suite: `scripts/matrix.py run -p NN` resumes every model's
+`model/<label>` branch, solves only the new task, and re-grades all tasks.
 
 ## Design principles for a good task
 

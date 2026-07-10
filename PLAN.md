@@ -51,9 +51,18 @@ Living plan for the AI-model coding benchmark. Check items off as they land.
       added after 2026-07-10 put 8/15 entries at 9/9. Three interacting seeded
       defects (value-based validation → ABA, no read set → write skew, full-copy
       snapshots → O(n) begin); hidden probes punish naive fixes, over-fixes, and
-      under-fixes. Verified both ways via `bench.sh` `_probe`; discrimination
-      validated pre-commit: one-shot gpt-5.4 FAILS (drops the copy without version
-      chains), agentic gpt-5.4-cc PASSES.
+      under-fixes. Verified both ways via `bench.sh` `_probe`.
+- [x] **Tier-4 run across the full matrix** — splits on harness: every frontier
+      one-shot entry except kimi fails the snapshot trap; the same models agentic
+      pass. 10/10 club: kimi (both harnesses), gpt-5.4-cc, gpt-5.5-cc.
+
+## Done (tooling)
+
+- [x] **`scripts/matrix.py`** — menu/CLI matrix driver: any models × projects slice
+      (per model+harness, per task, or single cell), resume-aware (`-p NN` folds a
+      new task into existing model branches without re-solving 1..N-1), plus
+      grade / status / summarize / evaluate / analyze / publish / pipeline.
+      Manages the openai-cc LiteLLM proxy lifecycle itself.
 
 ## Next
 
