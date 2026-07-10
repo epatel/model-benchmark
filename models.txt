@@ -3,6 +3,7 @@
 # Format:  <runner> <model>
 #   runner = claude  -> solved agentically via `claude -p` (run_models.sh)
 #   runner = ollama  -> solved via adapter, local or :cloud (run_ollama.sh)
+#   runner = openai  -> solved via adapter, OpenAI API (run_openai.sh)
 # Blank lines and lines starting with # are ignored.
 
 claude  haiku
@@ -17,6 +18,9 @@ ollama  kimi-k2.7-code:cloud
 ollama-cc  glm-5.2:cloud
 ollama-cc  gemma4:cloud
 ollama-cc  kimi-k2.7-code:cloud
+
+openai  gpt-5.5
+openai  gpt-5.4
 
 # add more, e.g.:
 # ollama  nemotron-3-ultra:cloud
