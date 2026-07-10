@@ -75,16 +75,18 @@ def output_text(resp):
     return "".join(parts)
 
 
-def write_usage(path, resp, dur_ms):
-    u = resp.get("usage", {}) or {}
-    cached = (u.get("input_tokens_details") or {}).get("cached_tokens", 0)
+def write_usage(path, usages, dur_ms, num_turns):
+    total_in = sum(u.get("input_tokens", 0) for u in usages)
+    total_out = sum(u.get("output_tokens", 0) for u in usages)
+    cached = sum((u.get("input_tokens_details") or {}).get("cached_tokens", 0)
+                 for u in usages)
     usage = {
         "duration_ms": dur_ms,
-        "num_turns": 1,
+        "num_turns": num_turns,
         "total_cost_usd": 0.0,
         "usage": {
-            "input_tokens": u.get("input_tokens", 0) - cached,
-            "output_tokens": u.get("output_tokens", 0),
+            "input_tokens": total_in - cached,
+            "output_tokens": total_out,
             "cache_read_input_tokens": cached,
             "cache_creation_input_tokens": 0,
         },
@@ -99,17 +101,30 @@ def main():
     files = source_files(proj)
     prompt = build_prompt(proj, files)
     t0 = time.monotonic()
-    resp = chat(model, prompt)
-    write_usage(usage_log, resp, int((time.monotonic() - t0) * 1000))
 
-    if resp.get("status") not in (None, "completed"):
-        print(f"  !! response status {resp.get('status')}: "
-              f"{(resp.get('incomplete_details') or {}).get('reason', '')}")
-    content = output_text(resp)
-    edits = parse_files(content, set(files))
+    # Small models occasionally emit malformed FILE markers; one retry keeps a
+    # single formatting flake from recording a bogus FAIL. All attempts' tokens
+    # are counted in the usage log.
+    attempts = 2
+    usages, edits, content = [], {}, ""
+    for attempt in range(1, attempts + 1):
+        resp = chat(model, prompt)
+        usages.append(resp.get("usage", {}) or {})
+        if resp.get("status") not in (None, "completed"):
+            print(f"  !! response status {resp.get('status')}: "
+                  f"{(resp.get('incomplete_details') or {}).get('reason', '')}")
+        content = output_text(resp)
+        edits = parse_files(content, set(files))
+        if edits:
+            break
+        print(f"  !! attempt {attempt}/{attempts}: no parseable file edits "
+              f"from {model} for {os.path.basename(proj)}")
+    write_usage(usage_log, usages, int((time.monotonic() - t0) * 1000),
+                len(usages))
+
     if not edits:
-        print(f"  !! no parseable file edits from {model} for {os.path.basename(proj)}")
-        print(content[:400])
+        print("  -- full final response follows --")
+        print(content)
         sys.exit(1)
     for rel, body in edits.items():
         with open(os.path.join(proj, rel), "w") as f:

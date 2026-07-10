@@ -100,9 +100,10 @@ def strip_fence(s):
 def parse_files(content, allowed):
     """Return {relpath: new_contents} for whitelisted source files only."""
     out = {}
-    for m in re.finditer(r"<<<FILE:\s*(.+?)>>>\n(.*?)\n<<<END>>>", content, re.DOTALL):
-        # Models that read the marker template literally emit extra trailing
-        # '>' (e.g. "<<<FILE: lru.py>>>>"); the lazy path group keeps them.
+    # Marker brackets are matched loosely (>=2): models emit both too many
+    # ("<<<FILE: lru.py>>>>", template read literally) and too few
+    # ("<<<END>>", observed from gpt-5.6-luna).
+    for m in re.finditer(r"<<<FILE:\s*(.+?)>{2,}\n(.*?)\n<<<END>{2,}", content, re.DOTALL):
         path = m.group(1).strip().rstrip(">").strip().lstrip("./")
         if path in allowed:
             out[path] = strip_fence(m.group(2))

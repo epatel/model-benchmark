@@ -22,9 +22,11 @@ ollama-cc  kimi-k2.7-code:cloud
 
 openai  gpt-5.5
 openai  gpt-5.4
+openai  gpt-5.6-luna
 
 openai-cc  gpt-5.5
 openai-cc  gpt-5.4
+openai-cc  gpt-5.6-luna
 
 # add more, e.g.:
 # ollama  nemotron-3-ultra:cloud
