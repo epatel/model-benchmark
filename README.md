@@ -25,7 +25,8 @@ git config core.hooksPath .githooks
 - **node** — project 04 (`node --test`)
 - **claude** CLI — for `run_models.sh` and `run_ollama_cc.sh` (agentic runners)
 - **ollama** ≥ 0.30 — for `run_ollama.sh` (local models, or `:cloud` models after sign-in)
-- **OPENAI_API_KEY** — for `run_openai.sh` (OpenAI models via the API)
+- **OPENAI_API_KEY** — for `run_openai.sh` and `run_openai_cc.sh` (OpenAI models via the API)
+- **litellm** (or **uv**, to run it via `uvx`) — for `run_openai_cc.sh` (Anthropic→OpenAI proxy)
 - **openssl** — to decrypt the answer key (`scripts/unpack_grading.sh`)
 
 ## Results
@@ -88,11 +89,12 @@ flowchart TD
         runall --> ollama["run_ollama.sh<br/><i>one-shot adapter</i>"]
         runall --> occ["run_ollama_cc.sh<br/><i>agentic via claude CLI +<br/>Ollama Anthropic-compat</i>"]
         runall --> openai["run_openai.sh<br/><i>one-shot adapter</i>"]
+        runall --> oaicc["run_openai_cc.sh<br/><i>agentic via claude CLI +<br/>LiteLLM Anthropic→OpenAI proxy</i>"]
         runall --> claude["run_models.sh<br/><i>agentic via claude CLI</i>"]
         ollama --> solve["scripts/ollama_solve.py<br/><i>1 HTTP call/task, writes files</i>"]
         openai --> osolve["scripts/openai_solve.py<br/><i>1 HTTP call/task, writes files</i>"]
-        ollama & occ & openai & claude --> usage["scripts/usage.py<br/><i>logs → model.usage.json</i>"]
-        ollama & occ & openai & claude --> bench["bench.sh start / grade<br/><i>branch dance, cherry-pick grading,<br/>CANON anti-tamper</i>"]
+        ollama & occ & openai & oaicc & claude --> usage["scripts/usage.py<br/><i>logs → model.usage.json</i>"]
+        ollama & occ & openai & oaicc & claude --> bench["bench.sh start / grade<br/><i>branch dance, cherry-pick grading,<br/>CANON anti-tamper</i>"]
         bench --> tests["scripts/run_all.sh<br/><i>oracle: all projects</i>"]
         tests --> one["scripts/run_one.sh<br/><i>visible + hidden tests</i>"]
     end
@@ -131,7 +133,7 @@ does the `grading`-branch dance — see `AGENTS.md`.
 ## Running models automatically (recommended)
 
 The canonical model list lives in **`models.txt`** — one `<runner> <model>` per
-line (`claude`, `ollama`, `ollama-cc`, or `openai`). Run **every** listed model and print
+line (`claude`, `ollama`, `ollama-cc`, `openai`, or `openai-cc`). Run **every** listed model and print
 the combined leaderboard with one command:
 
 ```bash
@@ -141,7 +143,7 @@ DRY=1 ./run_all.sh           # print the plan, run nothing
 SNAPSHOT=0 ./run_all.sh      # skip the automatic results-branch snapshot
 ```
 
-`run_all.sh` calls the four runners below in sequence. To run a subset
+`run_all.sh` calls the five runners below in sequence. To run a subset
 directly, call a runner with explicit model args instead.
 
 Runners must not overlap **in the same worktree** (they check out
@@ -151,7 +153,7 @@ worktree with disjoint model sets, then copy the second worktree's
 the recipe in `AGENTS.md`. In practice this cuts a full run's wall time by
 roughly a third (the slowest single model is the floor).
 
-Four umbrella runners drive every task for every model, then grade + tabulate.
+Five umbrella runners drive every task for every model, then grade + tabulate.
 All share the git harness (see `WORKFLOW.md`) and write to `reports/`.
 
 **Claude models** (agentic — edits files itself via `claude -p`):
@@ -187,6 +189,19 @@ the model returns whole files, the adapter writes them back):
 ./run_openai.sh gpt-5.5 gpt-5.4
 #   env: OPENAI_API_KEY (required), OPENAI_URL (default https://api.openai.com/v1),
 #        OPENAI_EFFORT (pin reasoning effort for fair comparisons; default: model default)
+```
+
+**OpenAI models, agentic** (`openai-cc` in `models.txt`) — OpenAI models driven
+through the same `claude` CLI harness. OpenAI has no Anthropic-compatible
+endpoint, so the runner starts a local [LiteLLM](https://docs.litellm.ai/)
+proxy (via `litellm` on PATH, or `uvx` if you have [uv](https://docs.astral.sh/uv/))
+that translates Anthropic `/v1/messages` to the OpenAI API. Labels get the same
+`-cc` suffix. Note the extra caveat: tool calls cross a schema translation, so
+this measures the model *through the LiteLLM bridge*, not its native harness:
+
+```bash
+./run_openai_cc.sh gpt-5.5 gpt-5.4    # -> reports/gpt-5.5-cc.*
+#   env: OPENAI_API_KEY (required), LITELLM_PORT (default 4141)
 ```
 
 Caveats: no prompt caching (all input tokens are fresh — expect millions), and

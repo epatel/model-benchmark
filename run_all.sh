@@ -18,6 +18,7 @@ claude_models=()
 ollama_models=()
 ollama_cc_models=()
 openai_models=()
+openai_cc_models=()
 while read -r runner model _rest; do
   [ -z "${runner:-}" ] && continue
   case "$runner" in
@@ -26,6 +27,7 @@ while read -r runner model _rest; do
     ollama) ollama_models+=("$model") ;;
     ollama-cc) ollama_cc_models+=("$model") ;;
     openai) openai_models+=("$model") ;;
+    openai-cc) openai_cc_models+=("$model") ;;
     *) echo "warning: unknown runner '$runner' (model '$model') — skipped" ;;
   esac
 done < "$CONF"
@@ -33,6 +35,7 @@ done < "$CONF"
 if [ ${#ollama_models[@]} -gt 0 ]; then echo "ollama: ${ollama_models[*]}"; else echo "ollama: (none)"; fi
 if [ ${#ollama_cc_models[@]} -gt 0 ]; then echo "ollama-cc (agentic via claude CLI): ${ollama_cc_models[*]}"; fi
 if [ ${#openai_models[@]} -gt 0 ]; then echo "openai: ${openai_models[*]}"; fi
+if [ ${#openai_cc_models[@]} -gt 0 ]; then echo "openai-cc (agentic via claude CLI + LiteLLM): ${openai_cc_models[*]}"; fi
 if [ ${#claude_models[@]} -gt 0 ]; then echo "claude: ${claude_models[*]}"; else echo "claude: (none)"; fi
 
 if [ -n "${DRY:-}" ]; then
@@ -44,6 +47,7 @@ fi
 if [ ${#ollama_models[@]} -gt 0 ]; then ./run_ollama.sh "${ollama_models[@]}"; fi
 if [ ${#ollama_cc_models[@]} -gt 0 ]; then ./run_ollama_cc.sh "${ollama_cc_models[@]}"; fi
 if [ ${#openai_models[@]} -gt 0 ]; then ./run_openai.sh "${openai_models[@]}"; fi
+if [ ${#openai_cc_models[@]} -gt 0 ]; then ./run_openai_cc.sh "${openai_cc_models[@]}"; fi
 if [ ${#claude_models[@]} -gt 0 ]; then ./run_models.sh "${claude_models[@]}"; fi
 
 echo "============================================================"
