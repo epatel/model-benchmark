@@ -237,6 +237,11 @@ def run_entry(runner, model, label, projects, fresh):
 
     if resume:
         git("checkout", "-q", f"model/{label}")
+        # The branch was cut from an older main: bring current tooling and the
+        # target projects' seeded state into the working tree. bench.sh grade
+        # only commits projects/, so the tooling files stay out of the model's
+        # work and go clean again when grade checks main back out.
+        git("checkout", "main", "--", "scripts/", "bench.sh")
         for proj in projects:  # reset targets to current seeded state
             git("checkout", "main", "--", f"projects/{proj}")
     else:
