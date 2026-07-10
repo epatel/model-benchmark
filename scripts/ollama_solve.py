@@ -49,8 +49,8 @@ def build_prompt(proj, files):
         "then output the COMPLETE updated contents of every file you change.",
         "",
         "Output format — for each changed file, and NOTHING else:",
-        "<<<FILE: <relative-path>>>>",
-        "<full file contents>",
+        "<<<FILE: relative-path.ext>>>",
+        "full file contents",
         "<<<END>>>",
         "",
         "Do not modify or output any test file. Do not add explanation outside the blocks.",
@@ -101,7 +101,9 @@ def parse_files(content, allowed):
     """Return {relpath: new_contents} for whitelisted source files only."""
     out = {}
     for m in re.finditer(r"<<<FILE:\s*(.+?)>>>\n(.*?)\n<<<END>>>", content, re.DOTALL):
-        path = m.group(1).strip().lstrip("./")
+        # Models that read the marker template literally emit extra trailing
+        # '>' (e.g. "<<<FILE: lru.py>>>>"); the lazy path group keeps them.
+        path = m.group(1).strip().rstrip(">").strip().lstrip("./")
         if path in allowed:
             out[path] = strip_fence(m.group(2))
     # Fallback: single-file task, no markers -> take the last fenced block.
