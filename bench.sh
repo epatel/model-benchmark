@@ -38,6 +38,7 @@ CANON=(
   projects/07-perf-dedup/run_tests.sh  projects/07-perf-dedup/test_dedupe.py
   projects/08-event-bus/run_tests.sh   projects/08-event-bus/test_bus.py
   projects/09-glob-matcher/run_tests.sh projects/09-glob-matcher/test_globmatch.py
+  projects/10-txn-store/run_tests.sh projects/10-txn-store/test_store.py
 )
 
 cmd="${1:-help}"; shift || true
