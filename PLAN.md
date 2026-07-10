@@ -45,6 +45,16 @@ Living plan for the AI-model coding benchmark. Check items off as they land.
     - `08-event-bus` (Py, 2 files) — multi-file feature (unsubscribe + once) with
       snapshot-during-iteration and raise-safety invariants in the hidden tests.
 
+## Done (tier-4)
+
+- [x] **`10-txn-store` (Py, 2 files)** — MVCC rewrite under an exact isolation spec,
+      added after 2026-07-10 put 8/15 entries at 9/9. Three interacting seeded
+      defects (value-based validation → ABA, no read set → write skew, full-copy
+      snapshots → O(n) begin); hidden probes punish naive fixes, over-fixes, and
+      under-fixes. Verified both ways via `bench.sh` `_probe`; discrimination
+      validated pre-commit: one-shot gpt-5.4 FAILS (drops the copy without version
+      chains), agentic gpt-5.4-cc PASSES.
+
 ## Next
 
 ## Backlog / ideas

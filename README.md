@@ -78,6 +78,22 @@ practice tier-3 discriminates on *solution quality* (a surgical ~40-line memo
 vs a ~120-line rewrite with dead code), which shows up in the edit stats and
 run reviews rather than pass/fail.
 
+**Tier 4** (added after the 2026-07-10 run put 8 of 15 entries at 9/9 —
+designed to discriminate among models that ace tiers 1–3):
+
+| # | Project | Lang | Task type | Oracle |
+|---|---------|------|-----------|--------|
+| 10 | `txn-store` | Python | Rewrite to MVCC under an exact isolation spec | `unittest` (hidden ABA/write-skew/phantom probes + snapshot-semantics probes + O(1)-begin perf budget) |
+
+Tier-4 layers three seeded defects that interact: value-based (not
+version-based) conflict detection, no read-set tracking, and O(n) full-copy
+snapshots. All visible tests pass on the seeded code. The trap is asymmetric:
+fixing the perf complaint by dropping the copy breaks snapshot reads unless
+the model builds real version chains, and hidden probes also punish
+*over*-fixing (aborting read-only txns, counting own-write reads). Validation
+run: one-shot gpt-5.4 (9/9 on tiers 1–3) fails it on exactly that trap, while
+agentic gpt-5.4-cc — which ran the visible tests and iterated — passes.
+
 ## Script map
 
 How the scripts call each other, from a full run to the published site:
