@@ -26,7 +26,9 @@ openai  gpt-5.6-luna
 
 openai-cc  gpt-5.5
 openai-cc  gpt-5.4
-openai-cc  gpt-5.6-luna
+# openai-cc gpt-5.6-luna: skipped — preview-tier TPM limit (200k/min) is too
+# small for the uncached agentic harness (~32k tok/turn), and LiteLLM converts
+# the streamed rate-limit failure into an empty success. Revisit at GA.
 
 # add more, e.g.:
 # ollama  nemotron-3-ultra:cloud
